@@ -268,7 +268,6 @@
 const FRAMES = [
   { label:'Engin',    emoji:'⬜', id:'none'     },
   { label:'Blómar',  emoji:'🌸', id:'flowers'  },
-  { label:'Stjörnur',emoji:'⭐', id:'stars'    },
   { label:'Ballónar',emoji:'🎈', id:'balloons' },
   { label:'Kóróna',  emoji:'👑', id:'crown'    },
   { label:'Hjörtu',  emoji:'💕', id:'hearts'   },
@@ -450,26 +449,6 @@ const FRAME_DRAW = {
       }
       ctx.stroke(); ctx.restore();
     });
-    ctx.globalAlpha=1;
-  },
-
-  stars(ctx, W, H, t) {
-    const pts=[
-      [.05,.05],[.22,.02],[.5,.03],[.78,.02],[.95,.05],
-      [.02,.28],[.98,.28],[.02,.55],[.98,.55],
-      [.07,.82],[.5,.97],[.93,.82],
-    ];
-    pts.forEach(([rx,ry],i)=>{
-      const x=rx*W, y=ry*H;
-      const sz=Math.min(W,H)*.052*(0.8+0.2*Math.sin(t*1.6+i));
-      star(ctx,x,y,sz,'#ffd700',.92);
-      if(i%2===0) sparkle(ctx,x+sz*.8,y-sz*.8,sz*.45,'rgba(255,248,220,.85)');
-    });
-    for(let i=0;i<10;i++){
-      const px=((i/10+t*.05)%1)*W;
-      sparkle(ctx,px,H*.03,Math.min(W,H)*.016,'rgba(255,215,0,.8)');
-      sparkle(ctx,W-px,H*.9,Math.min(W,H)*.013,'rgba(255,248,220,.7)');
-    }
     ctx.globalAlpha=1;
   },
 
@@ -673,10 +652,20 @@ function capture() {
     ctx.drawImage(vid,0,0,W,H);
   }
 
-  // draw frame overlay at capture resolution
+  // draw frame overlay accounting for object-fit:cover crop
+  const wrap = document.getElementById('vid-wrap');
+  const cW = wrap.clientWidth;
+  const cH = wrap.clientHeight;
+  const sc = Math.max(cW / W, cH / H);
+  const startX = (W - cW / sc) / 2;
+  const startY = (H - cH / sc) / 2;
   const fid = FRAMES[frameIdx].id;
-  if (fid !== 'none') FRAME_DRAW[fid](ctx, W, H, tick);
-  drawBadge(ctx, W, H);
+  ctx.save();
+  ctx.translate(startX, startY);
+  ctx.scale(1 / sc, 1 / sc);
+  if (fid !== 'none') FRAME_DRAW[fid](ctx, cW, cH, tick);
+  drawBadge(ctx, cW, cH);
+  ctx.restore();
 
   pendingPhoto = cv.toDataURL('image/jpeg', 0.92);
 
