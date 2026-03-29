@@ -1,77 +1,812 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fermingar Photobooth</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>Kristín Edda 🌸</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a0533 0%, #3b0764 50%, #1a0533 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; color: #fff; }
-    h1 { font-size: 2.2rem; text-align: center; margin-bottom: 6px; background: linear-gradient(90deg, #f9d423, #ff4e50); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 8px rgba(255,200,0,0.4)); }
-    .subtitle { font-size: 1rem; color: #d4b3f0; margin-bottom: 20px; text-align: center; }
-    .main-area { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 640px; gap: 16px; }
-    .video-container { position: relative; width: 100%; border-radius: 18px; overflow: hidden; box-shadow: 0 0 40px rgba(200,100,255,0.5); background: #000; }
-    #video { width: 100%; display: block; transform: scaleX(-1); }
-    .filters, .frames { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .filter-btn, .frame-btn { padding: 8px 16px; border-radius: 20px; border: 2px solid transparent; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-    .filter-btn.active { border-color: #f9d423; background: rgba(249,212,35,0.2); color: #f9d423; font-weight: bold; }
-    .frame-btn.active { border-color: #ff4e50; background: rgba(255,78,80,0.2); color: #ff9090; font-weight: bold; }
-    .section-label { font-size: 0.8rem; color: #b89fd4; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: center; }
-    .snap-btn { padding: 16px 48px; border-radius: 50px; border: none; background: linear-gradient(90deg, #f9d423, #ff4e50); color: #fff; font-size: 1.3rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 20px rgba(255,100,50,0.5); transition: transform 0.15s; }
-    .snap-btn:hover { transform: scale(1.06); }
-    .gallery-title { font-size: 1.1rem; color: #f0d9ff; margin-top: 10px; width: 100%; text-align: center; }
-    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; width: 100%; }
-    .gallery-item { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4); animation: popIn 0.3s ease; }
-    @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .gallery-item img { width: 100%; display: block; border-radius: 12px; }
-    .gallery-item .dl-btn { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.65); color: #fff; border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.75rem; cursor: pointer; }
-    .flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 999; animation: flashAnim 0.4s ease; }
-    @keyframes flashAnim { 0% { opacity: 0.9; } 100% { opacity: 0; } }
-    .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 8rem; font-weight: 900; color: rgba(255,255,255,0.95); pointer-events: none; opacity: 0; transition: opacity 0.15s; }
-    .countdown-overlay.visible { opacity: 1; }
-    .start-btn { padding: 14px 36px; border-radius: 50px; border: none; background: linear-gradient(90deg, #7c3aed, #a855f7); color: #fff; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 20px rgba(168,85,247,0.5); transition: transform 0.15s; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #0d001a;
+      color: #fff;
+      height: 100dvh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ── SCREENS ─────────────────────────────────────────── */
+    .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    /* ── WELCOME ─────────────────────────────────────────── */
+    #welcome {
+      background: radial-gradient(ellipse at 50% 30%, #3d0070 0%, #0d001a 70%);
+      justify-content: center;
+      gap: 18px;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .w-icon { font-size: 5em; animation: floatBob 3s ease-in-out infinite; display: block; }
+    @keyframes floatBob { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-14px) rotate(5deg)} }
+
+    .w-title {
+      font-size: clamp(2.2em, 8vw, 3.5em);
+      font-weight: 900;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #ffd700 0%, #fff8dc 50%, #ffd700 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .w-sub { font-size: 1.15em; color: #d4a0ff; margin-top: -10px; }
+    .w-label { font-size: 0.95em; color: #8860b0; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ffd700, #ff9500);
+      color: #1a0030;
+      border: none;
+      padding: 18px 55px;
+      border-radius: 50px;
+      font-size: 1.35em;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(255,180,0,0.45);
+      margin-top: 10px;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #c090e0;
+      border: 2px solid #7040a0;
+      padding: 13px 35px;
+      border-radius: 50px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ── CAMERA ──────────────────────────────────────────── */
+    #camera { background: #000; }
+
+    .cam-header {
+      position: absolute; top: 0; left: 0; right: 0;
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 20;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent);
+    }
+    .cam-title { font-size: 1em; font-weight: 700; color: #ffd700; }
+    .btn-small {
+      background: rgba(255,255,255,0.18);
+      border: none; color: #fff;
+      padding: 8px 16px; border-radius: 20px;
+      font-size: 0.9em; cursor: pointer;
+    }
+
+    #vid-wrap { position: relative; width: 100%; flex: 1; overflow: hidden; }
+    #vid { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #countdown-el {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: min(35vw, 200px); font-weight: 900;
+      color: #fff; text-shadow: 0 0 40px rgba(255,215,0,0.9);
+      pointer-events: none; opacity: 0;
+    }
+
+    .cam-footer { width: 100%; background: rgba(0,0,0,0.88); padding: 14px 18px 28px; }
+    .frames-lbl { text-align: center; font-size: 0.75em; color: #9060c0; margin-bottom: 8px; letter-spacing: 0.5px; }
+    .frames-row {
+      display: flex; gap: 10px; overflow-x: auto;
+      padding-bottom: 8px; margin-bottom: 14px; scrollbar-width: none;
+    }
+    .frames-row::-webkit-scrollbar { display: none; }
+    .f-opt {
+      flex-shrink: 0; width: 56px; height: 56px;
+      border-radius: 14px; border: 3px solid transparent;
+      background: rgba(255,255,255,0.08);
+      font-size: 1.8em; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .18s;
+    }
+    .f-opt.sel { border-color: #ffd700; background: rgba(255,200,0,0.18); transform: scale(1.12); }
+
+    .ctrl-row { display: flex; align-items: center; justify-content: center; gap: 28px; }
+    .btn-flip {
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      width: 52px; height: 52px; border-radius: 50%; font-size: 1.4em; cursor: pointer;
+    }
+    .btn-shutter {
+      width: 78px; height: 78px; border-radius: 50%;
+      background: #fff; border: 5px solid #ffd700;
+      box-shadow: 0 0 22px rgba(255,200,0,0.6);
+      cursor: pointer; transition: transform .1s;
+    }
+    .btn-shutter:active { transform: scale(0.88); }
+    .placeholder-icon { width: 52px; }
+
+    /* ── REVIEW ──────────────────────────────────────────── */
+    #review { background: #0a001a; }
+    .review-header {
+      padding: 18px 20px; width: 100%;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .review-title { flex: 1; text-align: center; font-weight: 700; font-size: 1.1em; color: #ffd700; }
+
+    #review-img {
+      max-width: 100%; max-height: 58dvh;
+      border-radius: 16px; object-fit: contain; margin: 0 16px;
+    }
+
+    .review-btns { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; width: 100%; max-width: 420px; }
+    .btn-send {
+      background: linear-gradient(135deg, #ffd700, #ff9500);
+      color: #1a0030; border: none; border-radius: 16px;
+      padding: 16px; font-size: 1.1em; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-retake {
+      background: rgba(255,255,255,0.1); color: #fff;
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 16px;
+      padding: 14px; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+
+    /* ── GALLERY ─────────────────────────────────────────── */
+    #gallery { background: #0a001a; overflow-y: auto; }
+    .gal-header {
+      padding: 18px 20px; width: 100%;
+      display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; background: #0a001a; z-index: 5;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .gal-title { flex: 1; font-size: 1.2em; font-weight: 800; color: #ffd700; }
+    .gal-count { font-size: 0.85em; color: #8060a0; }
+    .gal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 10px 10px 40px; width: 100%; }
+    .gal-item { aspect-ratio: 1; overflow: hidden; border-radius: 10px; cursor: pointer; }
+    .gal-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gal-empty { text-align: center; color: #7050a0; padding: 60px 20px; font-size: 1.05em; line-height: 1.8; }
+
+    /* ── LIGHTBOX ────────────────────────────────────────── */
+    #lightbox {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.96);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200; padding: 20px;
+    }
+    #lightbox.on { display: flex; }
+    #lb-img { max-width: 100%; max-height: 70dvh; border-radius: 14px; }
+    .lb-actions { display: flex; gap: 14px; margin-top: 20px; }
+    .lb-btn { padding: 13px 28px; border-radius: 28px; border: none; font-size: 1em; font-weight: 700; cursor: pointer; }
+    .lb-send { background: linear-gradient(135deg,#ffd700,#ff9500); color: #1a0030; }
+    .lb-del { background: rgba(220,50,50,0.3); color: #ff8080; }
+    .lb-close {
+      position: absolute; top: 18px; right: 18px;
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      width: 44px; height: 44px; border-radius: 50%; font-size: 1.3em; cursor: pointer;
+    }
   </style>
 </head>
 <body>
-<h1>✨ Fermingar Photobooth ✨</h1>
-<p class="subtitle">Taktu myndir og geymdu minningunar! 🎊</p>
-<div class="main-area">
-  <div class="video-container"><video id="video" autoplay playsinline></video><div class="countdown-overlay" id="countdown"></div></div>
-  <button class="start-btn" id="startBtn" onclick="startCamera()">📷 Kveikja á myndavél</button>
-  <div class="section-label">Síur</div>
-  <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('none',this)">Ekkert</button>
-    <button class="filter-btn" onclick="setFilter('grayscale',this)">Svart/hvítt</button>
-    <button class="filter-btn" onclick="setFilter('sepia',this)">Sepia</button>
-    <button class="filter-btn" onclick="setFilter('warm',this)">Hlýtt</button>
-    <button class="filter-btn" onclick="setFilter('cool',this)">Kalt</button>
-    <button class="filter-btn" onclick="setFilter('vivid',this)">Lifleg</button>
-  </div>
-  <div class="section-label">Ramminn</div>
-  <div class="frames">
-    <button class="frame-btn active" onclick="setFrame('none',this)">Enginn</button>
-    <button class="frame-btn" onclick="setFrame('gold',this)">🥇 Gull</button>
-    <button class="frame-btn" onclick="setFrame('party',this)">🎉 Party</button>
-    <button class="frame-btn" onclick="setFrame('hearts',this)">💜 Hjörtu</button>
-    <button class="frame-btn" onclick="setFrame('stars',this)">⭐ Stjörnur</button>
-  </div>
-  <button class="snap-btn" id="snapBtn" onclick="startCountdown()" disabled>📸 Taka mynd!</button>
-  <div class="gallery-title" id="galleryTitle" style="display:none">🖼️ Myndir þínar</div>
-  <div class="gallery" id="gallery"></div>
+
+<!-- ===== WELCOME ===== -->
+<div id="welcome" class="screen active">
+  <span class="w-icon">🌸</span>
+  <h1 class="w-title">Kristín Edda</h1>
+  <p class="w-sub">Ferming 2026</p>
+  <p class="w-label">📸 Photo Booth</p>
+  <button class="btn-primary" onclick="startCamera()">📷 &nbsp;Taka mynd</button>
+  <button class="btn-secondary" onclick="openGallery()">🖼️ &nbsp;Skoða myndir (${n})</button>
 </div>
-<canvas id="captureCanvas" style="display:none;"></canvas>
-<div class="flash" id="flash" style="display:none;"></div>
+
+<!-- ===== CAMERA ===== -->
+<div id="camera" class="screen">
+  <div class="cam-header">
+    <button class="btn-small" onclick="goHome()">← Heim</button>
+    <span class="cam-title">🌸 Kristín Edda</span>
+    <button class="btn-small" onclick="openGallery()">🖼️</button>
+  </div>
+
+  <div id="vid-wrap">
+    <video id="vid" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <div id="countdown-el"></div>
+  </div>
+
+  <div class="cam-footer">
+    <p class="frames-lbl">VELDU RAMMA</p>
+    <div class="frames-row" id="frames-row"></div>
+    <div class="ctrl-row">
+      <button class="btn-flip" onclick="flipCam()">🔄</button>
+      <button class="btn-shutter" id="shutter" onclick="beginCountdown()"></button>
+      <div class="placeholder-icon"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REVIEW ===== -->
+<div id="review" class="screen">
+  <div class="review-header">
+    <button class="btn-small" onclick="retake()">← Aftur</button>
+    <span class="review-title">Myndin þín 📸</span>
+    <div style="width:60px"></div>
+  </div>
+  <img id="review-img" src="" alt="Myndin þín">
+  <div class="review-btns">
+    <button class="btn-send" onclick="sendPhoto()">📤 &nbsp;Senda / Vista mynd</button>
+    <button class="btn-retake" onclick="retake()">🔄 &nbsp;Taka aftur</button>
+  </div>
+</div>
+
+<!-- ===== GALLERY ===== -->
+<div id="gallery" class="screen">
+  <div class="gal-header">
+    <button class="btn-small" onclick="goHome()">← Heim</button>
+    <span class="gal-title">🖼️ Myndir</span>
+    <span class="gal-count" id="gal-count"></span>
+  </div>
+  <div class="gal-grid" id="gal-grid"></div>
+  <div class="gal-empty" id="gal-empty">
+    Engar myndir ennþá 📷<br>Taktu fyrstu myndina!
+  </div>
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-actions">
+    <button class="lb-btn lb-send" onclick="sendLightboxPhoto()">📤 Senda</button>
+    <button class="lb-btn lb-del" onclick="deletePhoto()">🗑️ Eyða</button>
+  </div>
+</div>
+
 <script>
-let stream=null,currentFilter='none',currentFrame='none',photoCount=0;
-const video=document.getElementById('video'),snapBtn=document.getElementById('snapBtn'),startBtn=document.getElementById('startBtn'),captureCanvas=document.getElementById('captureCanvas'),countdownEl=document.getElementById('countdown'),gallery=document.getElementById('gallery'),galleryTitle=document.getElementById('galleryTitle'),flash=document.getElementById('flash');
-async function startCamera(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});video.srcObject=stream;video.style.filter=getFilter(currentFilter);startBtn.style.display='none';snapBtn.disabled=false;}catch(e){alert('Leyfðu aðgang að myndavél!');}}
-function setFilter(f,b){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(stream)video.style.filter=getFilter(f);}
-function setFrame(f,b){currentFrame=f;document.querySelectorAll('.frame-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
-function getFilter(f){return{grayscale:'grayscale(100%)',sepia:'sepia(80%)',warm:'saturate(130%) hue-rotate(-15deg) brightness(1.05)',cool:'saturate(110%) hue-rotate(20deg) brightness(1.02)',vivid:'saturate(170%) contrast(110%)'}[f]||'none';}
-function startCountdown(){snapBtn.disabled=true;let c=3;countdownEl.textContent=c;countdownEl.classList.add('visible');const t=setInterval(()=>{c--;if(c>0){countdownEl.textContent=c;}else{countdownEl.classList.remove('visible');clearInterval(t);takePhoto();setTimeout(()=>snapBtn.disabled=false,800);}},1000);}
-function takePhoto(){flash.style.display='block';flash.style.animation='none';flash.offsetHeight;flash.style.animation='flashAnim 0.4s ease forwards';setTimeout(()=>flash.style.display='none',450);const w=video.videoWidth,h=video.videoHeight;captureCanvas.width=w;captureCanvas.height=h;const ctx=captureCanvas.getContext('2d');ctx.save();ctx.translate(w,0);ctx.scale(-1,1);ctx.filter=getFilter(currentFilter);ctx.drawImage(video,0,0,w,h);ctx.restore();ctx.filter='none';drawFrame(ctx,currentFrame,w,h);photoCount++;addToGallery(captureCanvas.toDataURL('image/jpeg',0.92),photoCount);}
-function drawFrame(ctx,frame,w,h){const em=Math.min(w,h)*0.08;if(frame==='gold'){ctx.strokeStyle='#f9d423';ctx.lineWidth=em*0.6;ctx.strokeRect(em*0.3,em*0.3,w-em*0.6,h-em*0.6);[[em*.5,em*.5],[w-em*.5,em*.5],[em*.5,h-em*.5],[w-em*.5,h-em*.5]].forEach(p=>{ctx.font=em+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⭐',p[0],p[1]);});}else if(frame==='party'){const e=['🎉','🎊','🎈','✨','🥳','🎆','🎇','💫'];ctx.font=em+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';for(let i=0;i<7;i++){ctx.fillText(e[i%8],em*.7+i*((w-em*1.4)/6),em*.7);ctx.fillText(e[(i+3)%8],em*.7+i*((w-em*1.4)/6),h-em*.7);}}else if(frame==='hearts'){const e=['💜','💛','💜','💛','💜','💛','💜'];ctx.font=em+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';for(let i=0;i<7;i++){ctx.fillText(e[i],em*.7+i*((w-em*1.4)/6),em*.7);ctx.fillText(e[i],em*.7+i*((w-em*1.4)/6),h-em*.7);}const rows=Math.floor((h-em*2)/(em*1.2));for(let i=0;i<rows;i++){const y=em*1.5+i*((h-em*3)/Math.max(rows-1,1));ctx.fillText('💜',em*.7,y);ctx.fillText('💛',w-em*.7,y);}}else if(frame==='stars'){const e=['⭐','🌟','✨','💫','⭐','🌟','✨'];ctx.font=em+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';for(let i=0;i<7;i++){ctx.fillText(e[i],em*.7+i*((w-em*1.4)/6),em*.7);ctx.fillText(e[(i+2)%7],em*.7+i*((w-em*1.4)/6),h-em*.7);}}}
-function addToGallery(dataURL,num){galleryTitle.style.display='block';const item=document.createElement('div');item.className='gallery-item';const img=document.createElement('img');img.src=dataURL;img.alt='Mynd '+num;const btn=document.createElement('button');btn.className='dl-btn';btn.textContent='⬇ Vista';btn.onclick=()=>{const a=document.createElement('a');a.href=dataURL;a.download='fermingar-mynd-'+num+'.jpg';a.click();};item.appendChild(img);item.appendChild(btn);gallery.insertBefore(item,gallery.firstChild);}
+/* ============================================================
+   FRAMES
+   ============================================================ */
+const FRAMES = [
+  { label:'Engin',    emoji:'⬜', id:'none'     },
+  { label:'Blómar',  emoji:'🌸', id:'flowers'  },
+  { label:'Stjörnur',emoji:'⭐', id:'stars'    },
+  { label:'Ballónar',emoji:'🎈', id:'balloons' },
+  { label:'Kóróna',  emoji:'👑', id:'crown'    },
+  { label:'Hjörtu',  emoji:'💕', id:'hearts'   },
+  { label:'Regnbogi',emoji:'🌈', id:'rainbow'  },
+  { label:'Glitter', emoji:'✨', id:'glitter'  },
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let stream        = null;
+let facingMode    = 'user';
+let frameIdx      = 0;
+let animId        = null;
+let tick          = 0;          // animation time
+let photos        = [];         // [{id, data, ts}]
+let pendingPhoto  = null;       // data-url of captured photo
+let lbIdx         = -1;         // lightbox index
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  loadPhotos();
+  buildFrameRow();
+  refreshWelcomeCount();
+});
+
+function refreshWelcomeCount() {
+  const btn = document.querySelector('#welcome .btn-secondary');
+  if (btn) btn.innerHTML = `🖼️ &nbsp;Skoða myndir (${photos.length})`;
+}
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  stopCamera();
+  show('welcome');
+  refreshWelcomeCount();
+}
+
+/* ============================================================
+   FRAME ROW
+   ============================================================ */
+function buildFrameRow() {
+  const row = document.getElementById('frames-row');
+  FRAMES.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'f-opt' + (i === 0 ? ' sel' : '');
+    el.textContent = f.emoji;
+    el.title = f.label;
+    el.onclick = () => selectFrame(i);
+    row.appendChild(el);
+  });
+}
+
+function selectFrame(i) {
+  frameIdx = i;
+  document.querySelectorAll('.f-opt').forEach((el, j) => el.classList.toggle('sel', j === i));
+}
+
+/* ============================================================
+   CAMERA
+   ============================================================ */
+async function startCamera() {
+  show('camera');
+  await initCamera();
+}
+
+async function initCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    });
+    const vid = document.getElementById('vid');
+    vid.srcObject = stream;
+    vid.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+    vid.onloadedmetadata = () => { vid.play(); startAnim(); };
+  } catch (e) {
+    alert('Gat ekki tengst myndavél.\n\nVinsamlega opnaðu þessa síİu á vef (https) og leyfðu aðgang að myndavél í Safari stillingum.');
+    show('welcome');
+  }
+}
+
+function flipCam() {
+  facingMode = facingMode === 'user' ? 'environment' : 'user';
+  initCamera();
+}
+
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+}
+
+/* ============================================================
+   OVERLAY ANIMATION
+   ============================================================ */
+function startAnim() {
+  const canvas = document.getElementById('overlay');
+  const wrap   = document.getElementById('vid-wrap');
+  function resize() { canvas.width = wrap.clientWidth; canvas.height = wrap.clientHeight; }
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+
+  function loop() {
+    tick += 0.022;
+    drawOverlay(canvas.getContext('2d'), canvas.width, canvas.height);
+    animId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function drawOverlay(ctx, W, H) {
+  ctx.clearRect(0, 0, W, H);
+  const fid = FRAMES[frameIdx].id;
+  if (fid !== 'none') FRAME_DRAW[fid](ctx, W, H, tick);
+  drawBadge(ctx, W, H);
+}
+
+/* ============================================================
+   NAME BADGE
+   ============================================================ */
+function drawBadge(ctx, W, H) {
+  const bandH = Math.min(75, H * 0.1);
+  ctx.fillStyle = 'rgba(13,0,26,0.72)';
+  ctx.fillRect(0, H - bandH, W, bandH);
+
+  const grd = ctx.createLinearGradient(W * 0.15, 0, W * 0.85, 0);
+  grd.addColorStop(0, '#ffd700'); grd.addColorStop(0.5, '#fff8dc'); grd.addColorStop(1, '#ffd700');
+  ctx.fillStyle = grd;
+  ctx.font = `bold ${Math.min(W * 0.072, 34)}px -apple-system,sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('Kristín Edda', W / 2, H - bandH * 0.38);
+
+  ctx.fillStyle = 'rgba(200,160,255,0.9)';
+  ctx.font = `${Math.min(W * 0.038, 17)}px -apple-system,sans-serif`;
+  ctx.fillText('Ferming 2026', W / 2, H - bandH * 0.1);
+}
+
+/* ============================================================
+   FRAME DRAWING FUNCTIONS
+   ============================================================ */
+const FRAME_DRAW = {
+
+  flowers(ctx, W, H, t) {
+    const pts = [
+      [.05,.05],[.2,.02],[.5,.03],[.8,.02],[.95,.05],
+      [.02,.3],[.98,.3],[.02,.6],[.98,.6],
+      [.08,.85],[.92,.85]
+    ];
+    const cols = ['#ff69b4','#ff1493','#ff85c2','#ffb6c1'];
+    pts.forEach(([rx,ry],i) => {
+      const x = rx*W, y = ry*H, r = Math.min(W,H)*.054;
+      ctx.save(); ctx.translate(x,y); ctx.rotate(t+i*.9);
+      for (let p=0;p<5;p++) {
+        const a=(p/5)*Math.PI*2;
+        ctx.beginPath(); ctx.ellipse(Math.cos(a)*r*.48,Math.sin(a)*r*.48,r*.38,r*.18,a,0,Math.PI*2);
+        ctx.fillStyle=cols[i%cols.length]; ctx.globalAlpha=.82; ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(0,0,r*.18,0,Math.PI*2);
+      ctx.fillStyle='#ffd700'; ctx.globalAlpha=1; ctx.fill();
+      ctx.restore();
+    });
+    // vine corners
+    [[0,0,1,1],[W,0,-1,1]].forEach(([sx,sy,dx,dy]) => {
+      ctx.save(); ctx.strokeStyle='#2d7a2d'; ctx.lineWidth=2; ctx.globalAlpha=.5;
+      ctx.beginPath(); ctx.moveTo(sx,sy);
+      for(let i=1;i<=18;i++){
+        const p=i/18;
+        ctx.lineTo(sx+dx*p*W*.22+Math.sin(p*9+t)*8, sy+dy*p*H*.22);
+      }
+      ctx.stroke(); ctx.restore();
+    });
+    ctx.globalAlpha=1;
+  },
+
+  stars(ctx, W, H, t) {
+    for(let i=0;i<22;i++){
+      const a=(i/22)*Math.PI*2, r=Math.min(W,H)*.46;
+      const x=W/2+Math.cos(a)*r*(W/H>1?.88:1), y=H/2+Math.sin(a)*r;
+      const sz=Math.min(W,H)*.038*(0.7+0.3*Math.sin(t*2+i));
+      star(ctx,x,y,sz,'#ffd700',.88);
+    }
+    for(let i=0;i<9;i++){
+      const a=(i/9)*Math.PI*2+t*.25, r=Math.min(W,H)*.4;
+      sparkle(ctx,W/2+Math.cos(a)*r,H/2+Math.sin(a)*r,Math.min(W,H)*.018,'#fff8e7');
+    }
+    ctx.globalAlpha=1;
+  },
+
+  balloons(ctx, W, H, t) {
+    const bals=[
+      [.1,.12,'#ff6b6b'],[.27,.04,'#ffd700'],[.5,.06,'#6bcff6'],
+      [.73,.04,'#ff85c2'],[.9,.12,'#98fb98'],
+      [.05,.45,'#dda0dd'],[.95,.42,'#ff6b6b'],
+      [.12,.78,'#ffd700'],[.88,.75,'#6bcff6'],
+    ];
+    bals.forEach(([rx,ry,col],i)=>{
+      const x=rx*W, y=(ry+Math.sin(t*.9+i*1.1)*.018)*H, r=Math.min(W,H)*.058;
+      ctx.save();
+      // string
+      ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x,y+r);
+      ctx.bezierCurveTo(x+8,y+r*2,x-8,y+r*3,x,y+r*4.5); ctx.stroke();
+      // body
+      ctx.beginPath(); ctx.ellipse(x,y,r,r*1.22,0,0,Math.PI*2);
+      ctx.fillStyle=col; ctx.globalAlpha=.88; ctx.fill();
+      // shine
+      ctx.beginPath(); ctx.ellipse(x-r*.28,y-r*.28,r*.22,r*.13,-.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.5)'; ctx.globalAlpha=.65; ctx.fill();
+      ctx.restore();
+    });
+    ctx.globalAlpha=1;
+  },
+
+  crown(ctx, W, H, t) {
+    // corner brackets
+    const cs=Math.min(W,H)*.1;
+    [[5,5,1,1],[W-5,5,-1,1],[5,H-5,1,-1],[W-5,H-5,-1,-1]].forEach(([x,y,dx,dy])=>{
+      ctx.save(); ctx.strokeStyle='rgba(255,215,0,.75)'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(x+dx*cs,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*cs);
+      ctx.stroke(); ctx.restore();
+    });
+    // side diamonds
+    [0,1].forEach(side=>{
+      const x=side===0?W*.06:W*.94;
+      [.18,.45,.72].forEach((ry,j)=>{
+        const y=ry*H, sz=Math.min(W,H)*.028*(1+.12*Math.sin(t*1.8+j*2));
+        diamond(ctx,x,y,sz,'rgba(255,215,0,.8)');
+      });
+    });
+    // crown top
+    drawCrown(ctx,W/2,H*.065,Math.min(W*.14,58),'#ffd700','#b8860b',t);
+    // gold top/bottom strips
+    const grad=ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0,'rgba(255,215,0,0)');
+    grad.addColorStop(.5,'rgba(255,215,0,.4)');
+    grad.addColorStop(1,'rgba(255,215,0,0)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,W,4); ctx.fillRect(0,H-74,W,4);
+  },
+
+  hearts(ctx, W, H, t) {
+    const pts=[
+      [.05,.08],[.22,.02],[.5,.03],[.78,.02],[.95,.08],
+      [.02,.35],[.98,.35],[.02,.62],[.98,.62],
+      [.08,.88],[.4,.96],[.6,.96],[.92,.88],
+    ];
+    const cols=['#ff69b4','#ff1493','#ff8c00','#ff69b4'];
+    pts.forEach(([rx,ry],i)=>{
+      const x=rx*W, y=ry*H+Math.sin(t*1.4+i)*6;
+      const sz=Math.min(W,H)*.042*(0.8+0.2*Math.sin(t+i*.7));
+      heart(ctx,x,y,sz,cols[i%cols.length],.82);
+    });
+  },
+
+  rainbow(ctx, W, H, t) {
+    const cols=['#ff0000','#ff7f00','#ffff00','#00cc44','#0066ff','#8800ff'];
+    const cx=W/2, cy=H*.5;
+    cols.forEach((col,i)=>{
+      const r=Math.min(W,H)*(0.52+i*.038);
+      ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=Math.min(W*.013,7); ctx.globalAlpha=.38;
+      ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI+.15,Math.PI*2-.15); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,cy,r,.15,Math.PI-.15); ctx.stroke();
+      ctx.restore();
+    });
+    for(let i=0;i<14;i++){
+      const a=(i/14)*Math.PI*2+t*.2, r=Math.min(W,H)*(.44+.05*Math.sin(t*2+i));
+      const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+      if(x>0&&x<W&&y>0&&y<H) sparkle(ctx,x,y,Math.min(W*.009,7),'rgba(255,255,255,.8)');
+    }
+    ctx.globalAlpha=1;
+  },
+
+  glitter(ctx, W, H, t) {
+    const N=70, perim=2*(W+H);
+    for(let i=0;i<N;i++){
+      const pos=((i/N+t*.06)%1)*perim;
+      let x,y;
+      if(pos<W)         { x=pos;      y=H*.025; }
+      else if(pos<W+H)  { x=W*.975;   y=pos-W; }
+      else if(pos<2*W+H){ x=W-(pos-W-H); y=H*.975; }
+      else              { x=W*.025;   y=H-(pos-2*W-H); }
+      const br=0.3+0.7*Math.sin(t*6+i*.45);
+      const hue=(i/N*80+t*35)%360;
+      ctx.fillStyle=`hsla(${hue},100%,72%,${br})`;
+      ctx.beginPath(); ctx.arc(x,y,Math.min(W,H)*.007*br,0,Math.PI*2); ctx.fill();
+      if(i%4===0) sparkle(ctx,x,y,Math.min(W,H)*.015*br,`hsla(${hue},100%,90%,.9)`);
+    }
+    ctx.globalAlpha=1;
+  },
+};
+
+/* ── helpers ── */
+function star(ctx,x,y,sz,col,a){
+  ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=col;
+  ctx.beginPath();
+  for(let i=0;i<10;i++){
+    const ang=(i/10)*Math.PI*2-Math.PI/2, r=i%2===0?sz:sz*.4;
+    const method=i===0?'moveTo':'lineTo';
+    ctx[method](x+Math.cos(ang)*r,y+Math.sin(ang)*r);
+  }
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function sparkle(ctx,x,y,sz,col){
+  ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.globalAlpha=.85;
+  for(let i=0;i<4;i++){
+    const a=(i/4)*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(x-Math.cos(a)*sz,y-Math.sin(a)*sz);
+    ctx.lineTo(x+Math.cos(a)*sz,y+Math.sin(a)*sz);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function diamond(ctx,x,y,sz,col){
+  ctx.save(); ctx.fillStyle=col;
+  ctx.beginPath(); ctx.moveTo(x,y-sz); ctx.lineTo(x+sz*.55,y);
+  ctx.lineTo(x,y+sz); ctx.lineTo(x-sz*.55,y); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function heart(ctx,x,y,sz,col,a){
+  ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=col;
+  ctx.beginPath(); ctx.moveTo(x,y+sz*.28);
+  ctx.bezierCurveTo(x,y,x-sz,y,x-sz,y-sz*.48);
+  ctx.bezierCurveTo(x-sz,y-sz*1.3,x,y-sz*1.3,x,y-sz*.48);
+  ctx.bezierCurveTo(x,y-sz*1.3,x+sz,y-sz*1.3,x+sz,y-sz*.48);
+  ctx.bezierCurveTo(x+sz,y,x,y,x,y+sz*.28);
+  ctx.fill(); ctx.restore();
+}
+function drawCrown(ctx,x,y,sz,fill,stroke,t){
+  const w=sz*2, h=sz*1.15;
+  ctx.save(); ctx.translate(x,y); ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(-w/2,h/2); ctx.lineTo(-w/2,-h*.28);
+  ctx.lineTo(-w*.24,h*.22); ctx.lineTo(0,-h*.5);
+  ctx.lineTo(w*.24,h*.22); ctx.lineTo(w/2,-h*.28);
+  ctx.lineTo(w/2,h/2); ctx.closePath(); ctx.fill(); ctx.stroke();
+  [['#e00',[-w*.3,-h*.08]],['#0af',[0,-h*.35]],['#f6f',[w*.3,-h*.08]]].forEach(([c,[gx,gy]])=>{
+    ctx.beginPath(); ctx.arc(gx,gy,sz*.11,0,Math.PI*2); ctx.fillStyle=c; ctx.fill();
+  });
+  ctx.restore();
+}
+
+/* ============================================================
+   COUNTDOWN + CAPTURE
+   ============================================================ */
+function beginCountdown() {
+  const shutterBtn = document.getElementById('shutter');
+  shutterBtn.disabled = true;
+  const el = document.getElementById('countdown-el');
+  let n = 3;
+
+  function step() {
+    if (n === 0) {
+      el.style.opacity = '0';
+      shutterBtn.disabled = false;
+      capture();
+      return;
+    }
+    el.textContent = n;
+    el.style.opacity = '1';
+    el.style.transition = 'none';
+    el.style.transform = 'scale(1.5)';
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform .7s ease-out, opacity .7s ease-out';
+      el.style.transform = 'scale(0.6)';
+      el.style.opacity = '0';
+    });
+    n--;
+    setTimeout(step, 850);
+  }
+  step();
+}
+
+function capture() {
+  const vid = document.getElementById('vid');
+  const W = vid.videoWidth  || 1280;
+  const H = vid.videoHeight || 720;
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  // draw video (mirror for front cam)
+  if (facingMode === 'user') {
+    ctx.save(); ctx.scale(-1,1); ctx.drawImage(vid,-W,0,W,H); ctx.restore();
+  } else {
+    ctx.drawImage(vid,0,0,W,H);
+  }
+
+  // draw frame overlay at capture resolution
+  const fid = FRAMES[frameIdx].id;
+  if (fid !== 'none') FRAME_DRAW[fid](ctx, W, H, tick);
+  drawBadge(ctx, W, H);
+
+  pendingPhoto = cv.toDataURL('image/jpeg', 0.92);
+
+  // auto-save
+  savePhoto(pendingPhoto);
+
+  // show review
+  document.getElementById('review-img').src = pendingPhoto;
+  show('review');
+}
+
+/* ============================================================
+   REVIEW
+   ============================================================ */
+function retake() {
+  pendingPhoto = null;
+  show('camera');
+  if (!stream) initCamera();
+}
+
+async function sendPhoto() {
+  if (!pendingPhoto) return;
+  await shareDataUrl(pendingPhoto);
+}
+
+/* ============================================================
+   SHARE / DOWNLOAD
+   ============================================================ */
+async function shareDataUrl(dataUrl) {
+  try {
+    const blob = await toBlob(dataUrl);
+    const file = new File([blob], 'kristin-edda-fermingardagurinn.jpg', { type: 'image/jpeg' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: '🌸 Kristín Edda – Ferming 2026', files: [file] });
+    } else {
+      download(dataUrl);
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') download(dataUrl);
+  }
+}
+
+function download(dataUrl) {
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `kristin-edda-${Date.now()}.jpg`;
+  a.click();
+}
+
+function toBlob(dataUrl) {
+  return new Promise(res => {
+    const [hdr, b64] = dataUrl.split(',');
+    const mime = hdr.match(/:(.*?);/)[1];
+    const raw = atob(b64);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    res(new Blob([arr], { type: mime }));
+  });
+}
+
+/* ============================================================
+   PHOTO STORAGE
+   ============================================================ */
+function savePhoto(dataUrl) {
+  photos.push({ id: Date.now(), data: dataUrl, ts: new Date().toISOString() });
+  persist();
+}
+
+function persist() {
+  try {
+    if (photos.length > 60) photos = photos.slice(-60);
+    localStorage.setItem('pb_photos_ke', JSON.stringify(photos));
+  } catch(e) {
+    // storage full – trim aggressively
+    photos = photos.slice(-10);
+    try { localStorage.setItem('pb_photos_ke', JSON.stringify(photos)); } catch(_){}
+  }
+}
+
+function loadPhotos() {
+  try {
+    const raw = localStorage.getItem('pb_photos_ke');
+    if (raw) photos = JSON.parse(raw);
+  } catch(e) { photos = []; }
+}
+
+/* ============================================================
+   GALLERY
+   ============================================================ */
+function openGallery() {
+  stopCamera();
+  renderGallery();
+  show('gallery');
+}
+
+function renderGallery() {
+  const grid  = document.getElementById('gal-grid');
+  const empty = document.getElementById('gal-empty');
+  const count = document.getElementById('gal-count');
+
+  grid.innerHTML = '';
+  count.textContent = `${photos.length} myndir`;
+  empty.style.display = photos.length ? 'none' : 'block';
+
+  [...photos].reverse().forEach((p, i) => {
+    const idx = photos.length - 1 - i;
+    const wrap = document.createElement('div'); wrap.className = 'gal-item';
+    const img  = document.createElement('img'); img.src = p.data;
+    img.onclick = () => openLightbox(idx);
+    wrap.appendChild(img); grid.appendChild(wrap);
+  });
+}
+
+function openLightbox(idx) {
+  lbIdx = idx;
+  document.getElementById('lb-img').src = photos[idx].data;
+  document.getElementById('lightbox').classList.add('on');
+}
+function closeLightbox() {
+  lbIdx = -1;
+  document.getElementById('lightbox').classList.remove('on');
+}
+
+async function sendLightboxPhoto() {
+  if (lbIdx < 0) return;
+  await shareDataUrl(photos[lbIdx].data);
+}
+
+function deletePhoto() {
+  if (lbIdx < 0) return;
+  if (!confirm('Eyða þessari mynd?')) return;
+  photos.splice(lbIdx, 1);
+  persist();
+  closeLightbox();
+  renderGallery();
+}
 </script>
 </body>
 </html>
